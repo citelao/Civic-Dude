@@ -14,5 +14,23 @@ class MeetingSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
 
+    # <item>
+    #     <title>Arts Commission - 10/1/2025 (CANCELED)</title>
+    #     <link>
+    #         https://bellevue.legistar.com/Gateway.aspx?M=MD&amp;From=RSS&amp;ID=1340044&amp;GUID=08396C01-1563-4E18-B521-B489520E087A</link>
+    #     <guid isPermaLink="false">08396C01-1563-4E18-B521-B489520E087A-2025-09-22-16-48-13</guid>
+    #     <description />
+    #     <category>Arts Commission</category>
+    #     <pubDate>Mon, 22 Sep 2025 16:48:13 GMT</pubDate>
+    # </item>
     async def parse(self, response):
-        pass
+        items = response.xpath("//item")
+        for item in items:
+            yield {
+                "title": item.xpath("title/text()").get(),
+                "link": item.xpath("link/text()").get(),
+                "guid": item.xpath("guid/text()").get(),
+                "description": item.xpath("description/text()").get(),
+                "category": item.xpath("category/text()").get(),
+                "pubDate": item.xpath("pubDate/text()").get(),
+            }
