@@ -26,11 +26,18 @@ class MeetingSpider(scrapy.Spider):
     async def parse(self, response):
         items = response.xpath("//item")
         for item in items:
+            link = item.xpath("link/text()").get()
             yield {
                 "title": item.xpath("title/text()").get(),
-                "link": item.xpath("link/text()").get(),
+                "link": link,
                 "guid": item.xpath("guid/text()").get(),
                 "description": item.xpath("description/text()").get(),
                 "category": item.xpath("category/text()").get(),
                 "pubDate": item.xpath("pubDate/text()").get(),
             }
+
+            yield response.follow(url=link, callback=self.parse_meeting)
+
+    async def parse_meeting(self, response):
+        # Parse the individual meeting page
+        pass
