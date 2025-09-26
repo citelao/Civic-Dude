@@ -63,4 +63,29 @@ class MeetingSpider(scrapy.Spider):
         if full_minutes_link:
             meeting_item["file_urls"].append(full_minutes_link)
 
+        # Extract the RSS feed URL
+        # ```
+        # window.open(\'https://bellevue.legistar.com/Feed.ashx?M=CalendarDetail&ID=1273104&GUID=3DF9966D-3E8D-44D3-9F1B-56A33F096E21&Title=City+of+Bellevue+-+Meeting+of+City+Council+Regular+Meeting+on+7%2f22%2f2025+at+6%3a00+PM\'); return false;WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$ButtonRSS", "", true, "", "", false, false))
+        # ```
+        full_script = response.css("input[id$='ButtonRSS']::attr(onclick)").get()
+        if full_script:
+            start = full_script.find("https://")
+            end = full_script.find("');", start)
+            if start != -1 and end != -1:
+                rss_feed_url = full_script[start:end]
+                # Follow the RSS feed URL to get more details
+                yield response.follow(url=rss_feed_url, callback=self.parse_meeting_rss, cb_kwargs={"meeting_item": meeting_item})
+            else:
+                self.logger.warning("Could not extract RSS feed URL from script")
+        else:
+            self.logger.warning("No RSS feed URL found on meeting page")
+
         yield meeting_item
+
+    # https://bellevue.legistar.com/Feed.ashx?M=CalendarDetail&ID=1273104&GUID=3DF9966D-3E8D-44D3-9F1B-56A33F096E21
+    async def parse_meeting_rss(self, response, meeting_item = None):
+        if meeting_item is None:
+            meeting_item = MeetingItem()
+
+        # A bunch of items with titles!
+        
