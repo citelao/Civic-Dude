@@ -61,8 +61,8 @@ DOWNLOADER_MIDDLEWARES = {
 ITEM_PIPELINES = {
     "scrapy.pipelines.files.FilesPipeline": 1,
 
-#    "legistar.pipelines.LegistarPipeline": 300,
-    "legistar.pipelines.SqlitePipeline": 300,
+    # "legistar.pipelines.LegistarPipeline": 300,
+    # "legistar.pipelines.SqlitePipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
