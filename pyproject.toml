@@ -12,5 +12,5 @@ dependencies = [
     "requests>=2.32.5",
 ]
 
-[tool.uv.workspace]
-members = ["contrib/scrapy"]
+# [tool.uv.workspace]
+# members = ["contrib/scrapy"]
