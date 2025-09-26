@@ -123,7 +123,9 @@ class MeetingSpider(scrapy.Spider):
             attachment["link"] = full_link
             attachment["file_urls"] = [full_link]
 
-            legislation["attachments"].append(attachment)
+            # legislation["attachments"].append(attachment)
+
+            yield attachment
 
         # if meeting_item:
         #     if "details" not in meeting_item:
