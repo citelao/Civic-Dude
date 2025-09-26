@@ -26,7 +26,7 @@ class MeetingSpider(scrapy.Spider):
     # </item>
     async def parse(self, response):
         items = response.xpath("//item")
-        for item in items:
+        for item in items[:5]:
             link = item.xpath("link/text()").get()
             meeting_item = MeetingItem()
             meeting_item["title"] = item.xpath("title/text()").get()
