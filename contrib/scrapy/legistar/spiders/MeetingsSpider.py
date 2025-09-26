@@ -26,7 +26,7 @@ class MeetingSpider(scrapy.Spider):
     # </item>
     async def parse(self, response):
         items = response.xpath("//item")
-        for item in items[:2]:
+        for item in items[:5]:
             link = item.xpath("link/text()").get()
             meeting_item = MeetingItem()
             meeting_item["title"] = item.xpath("title/text()").get()
@@ -109,9 +109,11 @@ class MeetingSpider(scrapy.Spider):
         legislation["link"] = response.url
         legislation["fileNumber"] = response.css("span[id$='_lblFile2'] font::text").get()
 
-        legislation["attachments"] = []
+        if meeting_item:
+            legislation["meeting_guid"] = meeting_item.get("guid")
 
         # Look for attachments
+        # legislation["attachments"] = []
         attachment_links = response.css("table[id$='_tblAttachments'] a")
         for link in attachment_links:
             text = link.css("::text").get()
@@ -123,14 +125,12 @@ class MeetingSpider(scrapy.Spider):
             attachment["link"] = full_link
             attachment["file_urls"] = [full_link]
 
+            attachment["detail_link"] = response.url
+            if meeting_item:
+                attachment["meeting_guid"] = meeting_item.get("guid")
+
             # legislation["attachments"].append(attachment)
 
             yield attachment
 
-        # if meeting_item:
-        #     if "details" not in meeting_item:
-        #         meeting_item["details"] = []
-
-        #     meeting_item["details"].append(legislation)
-        # else:
         yield legislation

@@ -7,17 +7,15 @@ import scrapy
 
 
 class MeetingItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
     title = scrapy.Field()
     link = scrapy.Field()
     guid = scrapy.Field()
     description = scrapy.Field()
     category = scrapy.Field()
     pubDate = scrapy.Field()
+
     agenda_link = scrapy.Field()
     minutes_link = scrapy.Field()
-
     meeting_rss_link = scrapy.Field()
 
     # TODO: custom name
@@ -30,6 +28,9 @@ class MeetingItem(scrapy.Item):
 class LegislationDetail(scrapy.Item):
     title = scrapy.Field()
     link = scrapy.Field()
+
+    meeting_guid = scrapy.Field()
+
     fileNumber = scrapy.Field()
     attachments = scrapy.Field()
 
@@ -39,5 +40,9 @@ class LegislationDetail(scrapy.Item):
 class LegislationAttachment(scrapy.Item):
     title = scrapy.Field()
     link = scrapy.Field()
+
+    detail_link = scrapy.Field()
+    meeting_guid = scrapy.Field()
+
     file_urls = scrapy.Field()
     files = scrapy.Field()
