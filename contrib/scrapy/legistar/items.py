@@ -22,6 +22,9 @@ class MeetingItem(scrapy.Item):
     files = scrapy.Field()
     file_urls = scrapy.Field()
 
+    # An array of LegislationDetail items
+    details = scrapy.Field()
+
 class LegislationDetail(scrapy.Item):
     title = scrapy.Field()
     link = scrapy.Field()

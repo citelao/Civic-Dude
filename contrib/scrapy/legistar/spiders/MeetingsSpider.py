@@ -26,7 +26,7 @@ class MeetingSpider(scrapy.Spider):
     # </item>
     async def parse(self, response):
         items = response.xpath("//item")
-        for item in items[:10]:
+        for item in items[:2]:
             link = item.xpath("link/text()").get()
             meeting_item = MeetingItem()
             meeting_item["title"] = item.xpath("title/text()").get()
@@ -85,11 +85,18 @@ class MeetingSpider(scrapy.Spider):
     # https://bellevue.legistar.com/Feed.ashx?M=CalendarDetail&ID=1273104&GUID=3DF9966D-3E8D-44D3-9F1B-56A33F096E21
     async def parse_meeting_rss(self, response, meeting_item = None):
         # A bunch of items with titles!
-        pass
+        items = response.xpath("//item")
+        for item in items:
+            title = item.xpath("title/text()").get()
+            link = item.xpath("link/text()").get()
+            # self.logger.info(f"Found legislation item: {title} - {link}")
+
+            # Follow the link to get more details
+            yield response.follow(url=link, callback=self.parse_legislation_detail, cb_kwargs={"meeting_item": meeting_item})
 
     # uv tool run scrapy parse --spider meetings -c parse_legislation_detail "https://bellevue.legistar.com/LegislationDetail.aspx?From=RSS&ID=7489964&GUID=96986566-4EF9-4510-8D93-09DD72DF8781"
     # https://bellevue.legistar.com/LegislationDetail.aspx?From=RSS&ID=7489964&GUID=96986566-4EF9-4510-8D93-09DD72DF8781
-    async def parse_legislation_detail(self, response):
+    async def parse_legislation_detail(self, response, meeting_item = None):
         legislation = LegislationDetail()
         legislation["title"] = response.css("table[id$='_tblTitle'] span[id$='_lblTitle2'] font::text").get()
         legislation["link"] = response.url
@@ -103,7 +110,13 @@ class MeetingSpider(scrapy.Spider):
             full_link = response.urljoin(url)
             yield response.follow(url=full_link, callback=self.parse_legislation_attachment, cb_kwargs={"legislation": legislation, "title": text})
     
-        yield legislation
+        if meeting_item:
+            if "details" not in meeting_item:
+                meeting_item["details"] = []
+
+            meeting_item["details"].append(legislation)
+        else:
+            yield legislation
 
     # https://bellevue.legistar.com/View.ashx?M=F&ID=14536549&GUID=8D029B5B-346A-4C68-94A7-B3E81A59A8B0
     async def parse_legislation_attachment(self, response, legislation = None, title = None):
@@ -115,6 +128,7 @@ class MeetingSpider(scrapy.Spider):
         if "file_urls" not in attachment:
             attachment["file_urls"] = []
 
+        # TODO: this is not downloading. Because we've already requested the page?
         attachment["file_urls"].append(response.url)
 
         if legislation:
