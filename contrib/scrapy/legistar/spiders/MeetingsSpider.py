@@ -102,13 +102,21 @@ class MeetingSpider(scrapy.Spider):
         legislation["link"] = response.url
         legislation["fileNumber"] = response.css("span[id$='_lblFile2'] font::text").get()
 
+        legislation["attachments"] = []
+
         # Look for attachments
         attachment_links = response.css("table[id$='_tblAttachments'] a")
         for link in attachment_links:
             text = link.css("::text").get()
             url = link.css("::attr(href)").get()
             full_link = response.urljoin(url)
-            yield response.follow(url=full_link, callback=self.parse_legislation_attachment, cb_kwargs={"legislation": legislation, "title": text})
+
+            attachment = LegislationAttachment()
+            attachment["title"] = text
+            attachment["link"] = full_link
+            attachment["file_urls"] = [full_link]
+
+            legislation["attachments"].append(attachment)        
     
         if meeting_item:
             if "details" not in meeting_item:
@@ -117,24 +125,3 @@ class MeetingSpider(scrapy.Spider):
             meeting_item["details"].append(legislation)
         else:
             yield legislation
-
-    # https://bellevue.legistar.com/View.ashx?M=F&ID=14536549&GUID=8D029B5B-346A-4C68-94A7-B3E81A59A8B0
-    async def parse_legislation_attachment(self, response, legislation = None, title = None):
-        attachment = LegislationAttachment()
-        attachment["title"] = title
-        attachment["link"] = response.url
-
-        # if legislation item file_urls is not set, initialize it
-        if "file_urls" not in attachment:
-            attachment["file_urls"] = []
-
-        # TODO: this is not downloading. Because we've already requested the page?
-        attachment["file_urls"].append(response.url)
-
-        if legislation:
-            if "attachments" not in legislation:
-                legislation["attachments"] = []
-
-            legislation["attachments"].append(attachment)
-        else:
-            yield attachment
