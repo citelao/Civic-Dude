@@ -90,15 +90,15 @@ HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 FEED_EXPORT_ENCODING = "utf-8"
 
 FEEDS = {
-    "meetings.xml": {
+    ".output/meetings.xml": {
         "format": "xml",
         "item_classes": ["legistar.items.MeetingItem"]
     },
-    "legislation_detail.xml": {
+    ".output/legislation_detail.xml": {
         "format": "xml",
         "item_classes": ["legistar.items.LegislationDetail"]
     },
-    "legislation_attachment.xml": {
+    ".output/legislation_attachment.xml": {
         "format": "xml",
         "item_classes": ["legistar.items.LegislationAttachment"]
     }
