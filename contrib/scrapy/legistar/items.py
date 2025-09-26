@@ -21,3 +21,15 @@ class MeetingItem(scrapy.Item):
     # TODO: custom name
     files = scrapy.Field()
     file_urls = scrapy.Field()
+
+class LegislationDetail(scrapy.Item):
+    title = scrapy.Field()
+    link = scrapy.Field()
+    fileNumber = scrapy.Field()
+    attachments = scrapy.Field()
+
+class LegislationAttachment(scrapy.Item):
+    title = scrapy.Field()
+    link = scrapy.Field()
+    file_urls = scrapy.Field()
+    files = scrapy.Field()

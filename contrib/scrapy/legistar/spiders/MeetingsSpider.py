@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from legistar.items import MeetingItem
+from legistar.items import LegislationAttachment, LegislationDetail, MeetingItem
 import scrapy
 
 class MeetingSpider(scrapy.Spider):
@@ -84,8 +84,43 @@ class MeetingSpider(scrapy.Spider):
 
     # https://bellevue.legistar.com/Feed.ashx?M=CalendarDetail&ID=1273104&GUID=3DF9966D-3E8D-44D3-9F1B-56A33F096E21
     async def parse_meeting_rss(self, response, meeting_item = None):
-        if meeting_item is None:
-            meeting_item = MeetingItem()
-
         # A bunch of items with titles!
-        
+        pass
+
+    # uv tool run scrapy parse --spider meetings -c parse_legislation_detail "https://bellevue.legistar.com/LegislationDetail.aspx?From=RSS&ID=7489964&GUID=96986566-4EF9-4510-8D93-09DD72DF8781"
+    # https://bellevue.legistar.com/LegislationDetail.aspx?From=RSS&ID=7489964&GUID=96986566-4EF9-4510-8D93-09DD72DF8781
+    async def parse_legislation_detail(self, response):
+        legislation = LegislationDetail()
+        legislation["title"] = response.css("table[id$='_tblTitle'] span[id$='_lblTitle2'] font::text").get()
+        legislation["link"] = response.url
+        legislation["fileNumber"] = response.css("span[id$='_lblFile2'] font::text").get()
+
+        # Look for attachments
+        attachment_links = response.css("table[id$='_tblAttachments'] a")
+        for link in attachment_links:
+            text = link.css("::text").get()
+            url = link.css("::attr(href)").get()
+            full_link = response.urljoin(url)
+            yield response.follow(url=full_link, callback=self.parse_legislation_attachment, cb_kwargs={"legislation": legislation, "title": text})
+    
+        yield legislation
+
+    # https://bellevue.legistar.com/View.ashx?M=F&ID=14536549&GUID=8D029B5B-346A-4C68-94A7-B3E81A59A8B0
+    async def parse_legislation_attachment(self, response, legislation = None, title = None):
+        attachment = LegislationAttachment()
+        attachment["title"] = title
+        attachment["link"] = response.url
+
+        # if legislation item file_urls is not set, initialize it
+        if "file_urls" not in attachment:
+            attachment["file_urls"] = []
+
+        attachment["file_urls"].append(response.url)
+
+        if legislation:
+            if "attachments" not in legislation:
+                legislation["attachments"] = []
+
+            legislation["attachments"].append(attachment)
+        else:
+            yield attachment
