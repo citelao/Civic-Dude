@@ -35,7 +35,9 @@ class MeetingSpider(scrapy.Spider):
             meeting_item["description"] = item.xpath("description/text()").get()
             meeting_item["category"] = item.xpath("category/text()").get()
             meeting_item["pubDate"] = item.xpath("pubDate/text()").get()
-            yield meeting_item
+
+            # Don't do this: we yield the meeting item in parse_meeting.
+            # yield meeting_item
 
             yield response.follow(url=link, callback=self.parse_meeting, cb_kwargs={"meeting_item": meeting_item})
 
@@ -116,8 +118,8 @@ class MeetingSpider(scrapy.Spider):
             attachment["link"] = full_link
             attachment["file_urls"] = [full_link]
 
-            legislation["attachments"].append(attachment)        
-    
+            legislation["attachments"].append(attachment)
+
         if meeting_item:
             if "details" not in meeting_item:
                 meeting_item["details"] = []
