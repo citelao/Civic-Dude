@@ -41,6 +41,9 @@ class MeetingSpider(scrapy.Spider):
 
             yield response.follow(url=link, callback=self.parse_meeting, cb_kwargs={"meeting_item": meeting_item})
 
+    # uv tool run scrapy parse --spider meetings -c parse_meeting "https://bellevue.legistar.com/MeetingDetail.aspx?From=RSS&ID=1340044&GUID=08396C01-1563-4E18-B521-B489520E087A"
+    # https://bellevue.legistar.com/Gateway.aspx?M=MD&amp;From=RSS&amp;ID=1340044&amp;GUID=08396C01-1563-4E18-B521-B489520E087A
+    # https://bellevue.legistar.com/MeetingDetail.aspx?From=RSS&ID=1340044&GUID=08396C01-1563-4E18-B521-B489520E087A
     async def parse_meeting(self, response, meeting_item = None):
         # Parse the individual meeting page
         if meeting_item is None:
@@ -75,6 +78,8 @@ class MeetingSpider(scrapy.Spider):
             end = full_script.find("');", start)
             if start != -1 and end != -1:
                 rss_feed_url = full_script[start:end]
+                meeting_item["meeting_rss_link"] = rss_feed_url
+
                 # Follow the RSS feed URL to get more details
                 yield response.follow(url=rss_feed_url, callback=self.parse_meeting_rss, cb_kwargs={"meeting_item": meeting_item})
             else:
@@ -120,10 +125,10 @@ class MeetingSpider(scrapy.Spider):
 
             legislation["attachments"].append(attachment)
 
-        if meeting_item:
-            if "details" not in meeting_item:
-                meeting_item["details"] = []
+        # if meeting_item:
+        #     if "details" not in meeting_item:
+        #         meeting_item["details"] = []
 
-            meeting_item["details"].append(legislation)
-        else:
-            yield legislation
+        #     meeting_item["details"].append(legislation)
+        # else:
+        yield legislation

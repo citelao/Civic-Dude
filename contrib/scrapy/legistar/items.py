@@ -17,7 +17,9 @@ class MeetingItem(scrapy.Item):
     pubDate = scrapy.Field()
     agenda_link = scrapy.Field()
     minutes_link = scrapy.Field()
-    
+
+    meeting_rss_link = scrapy.Field()
+
     # TODO: custom name
     files = scrapy.Field()
     file_urls = scrapy.Field()
@@ -30,6 +32,9 @@ class LegislationDetail(scrapy.Item):
     link = scrapy.Field()
     fileNumber = scrapy.Field()
     attachments = scrapy.Field()
+
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
 
 class LegislationAttachment(scrapy.Item):
     title = scrapy.Field()
