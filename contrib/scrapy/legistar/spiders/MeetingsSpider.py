@@ -26,7 +26,7 @@ class MeetingSpider(scrapy.Spider):
     # </item>
     async def parse(self, response):
         items = response.xpath("//item")
-        for item in items[:5]:
+        for item in items[:10]:
             link = item.xpath("link/text()").get()
             meeting_item = MeetingItem()
             meeting_item["title"] = item.xpath("title/text()").get()
@@ -50,11 +50,17 @@ class MeetingSpider(scrapy.Spider):
         full_agenda_link = response.urljoin(agenda_link) if agenda_link else None
         meeting_item["agenda_link"] = full_agenda_link
 
+        minutes_link = response.css("a[id$='_hypMinutes']::attr(href)").get()
+        full_minutes_link = response.urljoin(minutes_link) if minutes_link else None
+        meeting_item["minutes_link"] = full_minutes_link
+
         # if meeting item file_urls is not set, initialize it
         if "file_urls" not in meeting_item:
             meeting_item["file_urls"] = []
-        
+
         if full_agenda_link:
             meeting_item["file_urls"].append(full_agenda_link)
+        if full_minutes_link:
+            meeting_item["file_urls"].append(full_minutes_link)
 
         yield meeting_item
