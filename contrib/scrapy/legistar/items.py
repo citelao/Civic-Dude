@@ -16,3 +16,7 @@ class MeetingItem(scrapy.Item):
     category = scrapy.Field()
     pubDate = scrapy.Field()
     agenda_link = scrapy.Field()
+    
+    # TODO: custom name
+    files = scrapy.Field()
+    file_urls = scrapy.Field()

@@ -39,11 +39,22 @@ class MeetingSpider(scrapy.Spider):
 
             yield response.follow(url=link, callback=self.parse_meeting, cb_kwargs={"meeting_item": meeting_item})
 
-    async def parse_meeting(self, response, meeting_item):
+    async def parse_meeting(self, response, meeting_item = None):
         # Parse the individual meeting page
+        if meeting_item is None:
+            meeting_item = MeetingItem()
 
         # Look for a link with an id that ends with `_hypAgenda` (e.g.
         # `ctl00_ContentPlaceHolder1_hypAgenda`)
-        agenda_link = response.xpath("//*[ends-with(@id, '_hypAgenda')]/@href").get()
-        meeting_item["agenda_link"] = response.urljoin(agenda_link) if agenda_link else None
+        agenda_link = response.css("a[id$='_hypAgenda']::attr(href)").get()
+        full_agenda_link = response.urljoin(agenda_link) if agenda_link else None
+        meeting_item["agenda_link"] = full_agenda_link
+
+        # if meeting item file_urls is not set, initialize it
+        if "file_urls" not in meeting_item:
+            meeting_item["file_urls"] = []
+        
+        if full_agenda_link:
+            meeting_item["file_urls"].append(full_agenda_link)
+
         yield meeting_item
