@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from legistar.items import MeetingItem
 import scrapy
 
 class MeetingSpider(scrapy.Spider):
@@ -27,17 +28,22 @@ class MeetingSpider(scrapy.Spider):
         items = response.xpath("//item")
         for item in items:
             link = item.xpath("link/text()").get()
-            yield {
-                "title": item.xpath("title/text()").get(),
-                "link": link,
-                "guid": item.xpath("guid/text()").get(),
-                "description": item.xpath("description/text()").get(),
-                "category": item.xpath("category/text()").get(),
-                "pubDate": item.xpath("pubDate/text()").get(),
-            }
+            meeting_item = MeetingItem()
+            meeting_item["title"] = item.xpath("title/text()").get()
+            meeting_item["link"] = link
+            meeting_item["guid"] = item.xpath("guid/text()").get()
+            meeting_item["description"] = item.xpath("description/text()").get()
+            meeting_item["category"] = item.xpath("category/text()").get()
+            meeting_item["pubDate"] = item.xpath("pubDate/text()").get()
+            yield meeting_item
 
-            yield response.follow(url=link, callback=self.parse_meeting)
+            yield response.follow(url=link, callback=self.parse_meeting, cb_kwargs={"meeting_item": meeting_item})
 
-    async def parse_meeting(self, response):
+    async def parse_meeting(self, response, meeting_item):
         # Parse the individual meeting page
-        pass
+
+        # Look for a link with an id that ends with `_hypAgenda` (e.g.
+        # `ctl00_ContentPlaceHolder1_hypAgenda`)
+        agenda_link = response.xpath("//*[ends-with(@id, '_hypAgenda')]/@href").get()
+        meeting_item["agenda_link"] = response.urljoin(agenda_link) if agenda_link else None
+        yield meeting_item

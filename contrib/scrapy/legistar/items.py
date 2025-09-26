@@ -6,7 +6,13 @@
 import scrapy
 
 
-class LegistarItem(scrapy.Item):
+class MeetingItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    title = scrapy.Field()
+    link = scrapy.Field()
+    guid = scrapy.Field()
+    description = scrapy.Field()
+    category = scrapy.Field()
+    pubDate = scrapy.Field()
+    agenda_link = scrapy.Field()
